@@ -72,16 +72,16 @@ int main(int argc, char* argv[])
     if (command.size() > 0) {
         TaskResult result = run_task(command, fs::current_path(), false);
         if (result.return_code == 0) {
-            notify_natively(title, message);
+            notify_natively(title, message, NotificationType::Info);
         } else {
-            notify_natively(title, warning);
+            notify_natively(title, warning, NotificationType::Warn);
         }
     } else {
         if (!args["warning"].as<string>().empty()) {
             std::cerr << "Error: Warning message (-w/--warning) must be passed together with a command" << std::endl;
             return 1;
         }
-        notify_natively(args["title"].as<string>(), args["message"].as<string>());
+        notify_natively(title, message, NotificationType::Info);
     }
 
     return 0;
