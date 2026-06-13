@@ -86,7 +86,7 @@ void notify_macos(string_view title, string_view message)
 
 #endif // __APPLE__
 
-export void notify_natively(string title, string message, [[maybe_unused]] NotificationType type = NotificationType::Info)
+export void notify_natively(string_view title, string_view message, [[maybe_unused]] NotificationType type = NotificationType::Info)
 {
 #ifdef __linux__
     notify_linux(title, message);

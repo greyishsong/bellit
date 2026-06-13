@@ -14,6 +14,7 @@ using std::string_view;
 using std::vector;
 namespace fs = std::filesystem;
 
+// clang-format off
 constexpr string_view examples = "Examples:\n"
 "To notify instantly:\n"
 "    bellit -t \"Your title\" -m \"Your message\"\n"
@@ -21,26 +22,58 @@ constexpr string_view examples = "Examples:\n"
 "    bellit -t \"Compression\" -m \"Gzip package created.\" -- tar -zcvf large-file.tar.gz /path/to/large/directory\n"
 "Warn when the task fails:\n"
 "    bellit -t \"Ping\" -m \"Connected\" -w \"Disconnected\" -- ping -c 1 192.168.1.1";
+// clang-format on
+
+int run_task_and_notify(
+    string_view title, string_view message, [[maybe_unused]] string_view warning,
+    const vector<string>& command
+)
+{
+    if (command.size() > 0) {
+        // A command is passed, run it before notification.
+        TaskResult result = run_task(command, fs::current_path(), false);
+        if (result.return_code == 0) {
+            notify_natively(title, message, NotificationType::Info);
+        } else {
+            notify_natively(title, warning, NotificationType::Warn);
+        }
+    } else {
+        // No command passed, notify directly.
+        if (!warning.empty()) {
+            std::cerr
+                << "Error: Warning message (-w/--warning) must be passed together with a command"
+                << std::endl;
+            return 1;
+        }
+        notify_natively(title, message, NotificationType::Info);
+    }
+    return 0;
+}
 
 int main(int argc, char* argv[])
 {
-    cxxopts::Options options("bellit", "Notify the user instantly or after a task has been accomplished.");
+    cxxopts::Options options(
+        "bellit", "Notify the user instantly or after a task has been accomplished."
+    );
     // clang-format off
     options.add_options()
     (
         "t,title",
         "Title of the notification",
-        cxxopts::value<string>()
+        cxxopts::value<string>(),
+        "TITLE"
     )
     (
         "m,message",
         "Message to send",
-        cxxopts::value<string>()
+        cxxopts::value<string>(),
+        "MESSAGE"
     )
     (
         "w,warning",
-        "Message to send when the task fails. If not set, message (-m/--message) will be used.",
-        cxxopts::value<string>()->default_value("")
+        "Message to send when the task fails. If not set, MESSAGE (specified by -m/--message) will be used.",
+        cxxopts::value<string>()->default_value(""),
+        "WARNING"
     )
     (
         "h,help",
@@ -57,32 +90,30 @@ int main(int argc, char* argv[])
     options.set_width(80);
     options.parse_positional("command");
 
-    auto args = options.parse(argc, argv);
-    if (args["help"].as<bool>()) {
-        std::cout << options.help() << std::endl;;
+    cxxopts::ParseResult args        = options.parse(argc, argv);
+    bool                 show_help   = args.contains("help");
+    int                  return_code = 0;
+
+    if (!show_help) {
+        try {
+            const string         title       = args["title"].as<string>();
+            const string         message     = args["message"].as<string>();
+            const string         raw_warning = args["warning"].as<string>();
+            const string&        warning     = raw_warning.empty() ? message : raw_warning;
+            const vector<string> command     = args["command"].as<vector<string>>();
+            return_code = run_task_and_notify(title, message, warning, command);
+        } catch (const cxxopts::exceptions::exception& e) {
+            show_help = true;
+            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "See the following help message for correct usage:\n" << std::endl;
+            return_code = 1;
+        }
+    }
+
+    if (show_help) {
+        std::cout << options.help() << std::endl;
         std::cout << examples << std::endl;
-        return 0;
     }
 
-    const string title = args["title"].as<string>();
-    const string message = args["message"].as<string>();
-    const string raw_warning = args["warning"].as<string>();
-    const string& warning = raw_warning.empty()? message : raw_warning;
-    const vector<string> command = args["command"].as<vector<string>>();
-    if (command.size() > 0) {
-        TaskResult result = run_task(command, fs::current_path(), false);
-        if (result.return_code == 0) {
-            notify_natively(title, message, NotificationType::Info);
-        } else {
-            notify_natively(title, warning, NotificationType::Warn);
-        }
-    } else {
-        if (!args["warning"].as<string>().empty()) {
-            std::cerr << "Error: Warning message (-w/--warning) must be passed together with a command" << std::endl;
-            return 1;
-        }
-        notify_natively(title, message, NotificationType::Info);
-    }
-
-    return 0;
+    return return_code;
 }
