@@ -1,0 +1,126 @@
+name: Nightly Release
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-release
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x64
+            asset_name: bellit-linux-x64
+            executable: build/bellit
+          - os: windows-2022
+            platform: windows-x64
+            asset_name: bellit-windows-x64.exe
+            executable: build/bellit.exe
+          - os: macos-15
+            platform: macos-arm64
+            asset_name: bellit-macos-arm64
+            executable: build/bellit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.1.5'
+
+      - name: Check tools
+        run: |
+          cmake --version
+          ninja --version
+          clang++ --version
+
+      - name: Configure and build
+        run: |
+          cmake --preset default -DCMAKE_BUILD_TYPE=Release
+          cmake --build --preset default --config Release
+
+      - name: Rename executable
+        if: runner.os != 'Windows'
+        run: |
+          mv "${{ matrix.executable }}" "build/${{ matrix.asset_name }}"
+
+      - name: Rename executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Move-Item '${{ matrix.executable }}' 'build/${{ matrix.asset_name }}'
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bellit-${{ matrix.platform }}
+          path: build/${{ matrix.asset_name }}
+          if-no-files-found: error
+
+  release:
+    name: Update Nightly Release
+    runs-on: ubuntu-slim
+    needs: build
+
+    steps:
+      - name: Download executable artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bellit-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Update nightly tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const ref = 'tags/nightly';
+
+            try {
+              await github.rest.git.updateRef({
+                owner,
+                repo,
+                ref,
+                sha: context.sha,
+                force: true,
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/${ref}`,
+                sha: context.sha,
+              });
+            }
+
+      - name: Update Nightly Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: nightly
+          target_commitish: ${{ github.sha }}
+          name: Nightly Release
+          body: Automated nightly build for ${{ github.sha }}.
+          prerelease: true
+          make_latest: 'false'
+          files: artifacts/*
+          fail_on_unmatched_files: true
+          overwrite_files: true
