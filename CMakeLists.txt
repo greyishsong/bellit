@@ -23,6 +23,17 @@ FetchContent_MakeAvailable(
     cxxopts
 )
 
+# Ensure tiny-process-library is compiled with C++ 20, because on Windows MSVC
+# standard library requires at least C++ 14.
+get_target_property(tiny_process_library_compile_options tiny-process-library COMPILE_OPTIONS)
+if(tiny_process_library_compile_options)
+    list(REMOVE_ITEM tiny_process_library_compile_options -std=c++11)
+    set_target_properties(tiny-process-library PROPERTIES
+        COMPILE_OPTIONS "${tiny_process_library_compile_options}"
+    )
+endif()
+target_compile_features(tiny-process-library PRIVATE cxx_std_20)
+
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_sources(${PROJECT_NAME}
     PRIVATE FILE_SET CXX_MODULES
