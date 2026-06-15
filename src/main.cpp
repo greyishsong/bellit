@@ -111,9 +111,10 @@ int main(int argc, char* argv[])
             const string         title       = args["title"].as<string>();
             const string         message     = args["message"].as<string>();
             const string         raw_warning = args["warning"].as<string>();
-            const string&        warning     = raw_warning.empty() ? message : raw_warning;
             const vector<string> command     = args["command"].as<vector<string>>();
-            return_code = run_task_and_notify(title, message, warning, command);
+            // If a command is passed and the warning is empty, use the message as a fallback.
+            const string& warning = !command.empty() && raw_warning.empty() ? message : raw_warning;
+            return_code           = run_task_and_notify(title, message, warning, command);
         } catch (const cxxopts::exceptions::exception& e) {
             show_help = true;
             show_error(e.what());
