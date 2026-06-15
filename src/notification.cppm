@@ -9,10 +9,10 @@ module;
 export module notification;
 import process;
 
+using std::format;
 using std::string;
 using std::string_view;
 using std::vector;
-using std::format;
 namespace fs = std::filesystem;
 using namespace std::string_view_literals;
 
@@ -28,12 +28,9 @@ constexpr string_view get_icon_name(NotificationType type)
     return ""sv;
 #elif defined(_WIN32)
     switch (type) {
-        case NotificationType::Info:
-            return "Info"sv;
-        case NotificationType::Warn:
-            return "Warning"sv;
-        default:
-            return "Info"sv;
+    case NotificationType::Info: return "Info"sv;
+    case NotificationType::Warn: return "Warning"sv;
+    default: return "Info"sv;
     }
 #elif defined(__APPLE__)
     return ""sv;
@@ -54,11 +51,13 @@ void notify_linux(string_view title, string_view message)
 
 #ifdef _WIN32
 
-void notify_windows(string_view title, string_view message, NotificationType type = NotificationType::Info)
+void notify_windows(
+    string_view title, string_view message, NotificationType type = NotificationType::Info
+)
 {
     // Create a toast notification through PowerShell
     const string_view icon_name = get_icon_name(type);
-    const string script = format(
+    const string      script    = format(
         "Add-Type -AssemblyName System.Windows.Forms;"
         "$global:balmsg = New-Object System.Windows.Forms.NotifyIcon;"
         "$balmsg.BalloonTipTitle = \\\"{}\\\";"
@@ -82,11 +81,17 @@ void notify_windows(string_view title, string_view message, NotificationType typ
 
 void notify_macos(string_view title, string_view message)
 {
+    const string script = format("display notification \"{}\" with title \"{}\"", message, title);
+    const vector<string> cmd = {"osascript", "-e", script};
+    run_task(cmd, fs::current_path(), false);
 }
 
 #endif // __APPLE__
 
-export void notify_natively(string_view title, string_view message, [[maybe_unused]] NotificationType type = NotificationType::Info)
+export void notify_natively(
+    string_view title, string_view message,
+    [[maybe_unused]] NotificationType type = NotificationType::Info
+)
 {
 #ifdef __linux__
     notify_linux(title, message);
