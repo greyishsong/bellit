@@ -90,9 +90,21 @@ int main(int argc, char* argv[])
     options.set_width(80);
     options.parse_positional("command");
 
-    cxxopts::ParseResult args        = options.parse(argc, argv);
-    bool                 show_help   = args.contains("help");
+    cxxopts::ParseResult args;
+    bool                 show_help;
     int                  return_code = 0;
+    auto                 show_error  = [](const char* error_message) -> void {
+        std::cerr << "Error: " << error_message << std::endl;
+        std::cerr << "See the following help message for correct usage:\n" << std::endl;
+    };
+    try {
+        args      = options.parse(argc, argv);
+        show_help = args.contains("help");
+    } catch (const cxxopts::exceptions::exception& e) {
+        show_help = true;
+        show_error(e.what());
+        return_code = 1;
+    }
 
     if (!show_help) {
         try {
@@ -104,8 +116,7 @@ int main(int argc, char* argv[])
             return_code = run_task_and_notify(title, message, warning, command);
         } catch (const cxxopts::exceptions::exception& e) {
             show_help = true;
-            std::cerr << "Error: " << e.what() << std::endl;
-            std::cerr << "See the following help message for correct usage:\n" << std::endl;
+            show_error(e.what());
             return_code = 1;
         }
     }
