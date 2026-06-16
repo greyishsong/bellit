@@ -64,8 +64,8 @@ void notify_windows(
     const string      script    = format(
         "Add-Type -AssemblyName System.Windows.Forms;"
         "$global:balmsg = New-Object System.Windows.Forms.NotifyIcon;"
-        "$balmsg.BalloonTipTitle = \\\"{}\\\";"
-        "$balmsg.BalloonTipText = \\\"{}\\\";"
+        "$balmsg.BalloonTipTitle = \"{}\";"
+        "$balmsg.BalloonTipText = \"{}\";"
         "$path = (Get-Process -id $pid).Path;"
         "$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path);"
         "$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::{};"
