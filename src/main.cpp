@@ -8,6 +8,7 @@
 
 import process;
 import notification;
+import environment;
 
 using std::string;
 using std::string_view;
@@ -24,6 +25,27 @@ constexpr string_view examples = "Examples:\n"
 "    bellit -t \"Ping\" -m \"Connected\" -w \"Disconnected\" -- ping -c 1 192.168.1.1";
 // clang-format on
 
+/**
+ * \brief Check session environment to ensure the notification will be sent to
+ *      local machine.
+ */
+void notify(string_view title, string_view message, NotificationType type)
+{
+    if (is_ssh()) {
+        // OSC control sequence can be passed through SSH.
+        const string raw_control_seq = osc_777_control_seq(title, message); 
+        if (is_tmux()) {
+            const string wrapped_seq = wrap_with_dcs(raw_control_seq);
+            output_to_tty(wrapped_seq);
+        } else {
+            output_to_tty(raw_control_seq);
+        }
+    } else {
+        // Use native notification if called locally.
+        notify_natively(title, message, type);
+    }
+}
+
 int run_task_and_notify(
     string_view title, string_view message, [[maybe_unused]] string_view warning,
     const vector<string>& command
@@ -33,9 +55,9 @@ int run_task_and_notify(
         // A command is passed, run it before notification.
         TaskResult result = run_task(command, fs::current_path(), false);
         if (result.return_code == 0) {
-            notify_natively(title, message, NotificationType::Info);
+            notify(title, message, NotificationType::Info);
         } else {
-            notify_natively(title, warning, NotificationType::Warn);
+            notify(title, warning, NotificationType::Warn);
         }
     } else {
         // No command passed, notify directly.
@@ -45,7 +67,7 @@ int run_task_and_notify(
                 << std::endl;
             return 1;
         }
-        notify_natively(title, message, NotificationType::Info);
+        notify(title, message, NotificationType::Info);
     }
     return 0;
 }

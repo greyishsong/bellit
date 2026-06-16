@@ -39,6 +39,7 @@ target_sources(${PROJECT_NAME}
     PRIVATE FILE_SET CXX_MODULES
     FILES src/notification.cppm
     src/process.cppm
+    src/environment.cppm
 )
 target_compile_options(${PROJECT_NAME}
     PRIVATE -Wall -Werror
