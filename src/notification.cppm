@@ -5,6 +5,8 @@ module;
 #include <filesystem>
 #include <vector>
 #include <format>
+#include <iostream>
+#include <fstream>
 
 export module notification;
 import process;
@@ -15,6 +17,8 @@ using std::string_view;
 using std::vector;
 namespace fs = std::filesystem;
 using namespace std::string_view_literals;
+
+// -------------------- Native notification implementations --------------------
 
 export enum class NotificationType
 {
@@ -102,4 +106,37 @@ export void notify_natively(
 #else
     throw std::runtime_error("Unsupported platform");
 #endif
+}
+
+// -------------------- OSC notification implementations --------------------
+
+export void output_to_tty(string_view content)
+{
+    using std::ofstream;
+#ifdef _WIN32
+    ofstream tty("CONOUT$", std::ios::out);
+#else
+    ofstream tty("/dev/tty", std::ios::out);
+#endif
+    tty << content;
+}
+
+export string osc_9_control_seq(string_view title)
+{
+    return format("\x1b];9;{}\x07", title);
+}
+
+export string osc_777_control_seq(string_view title, string_view message)
+{
+    return format("\x1b];777;notify;{};{}\x07", title, message);
+}
+
+/*!
+ * \brief Wrap a control sequence with DCS (required by tmux).
+ * \param control_seq The raw control sequence **not** ending with ST (ESC \).
+ * \returns Wrapped sequence which will be parsed by tmux.
+ */
+export string wrap_with_dcs(string_view control_seq)
+{
+    return format("\x1bPtmux;\x1b{}\x1b\\", control_seq);
 }
