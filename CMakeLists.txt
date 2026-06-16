@@ -44,6 +44,11 @@ target_sources(${PROJECT_NAME}
 target_compile_options(${PROJECT_NAME}
     PRIVATE -Wall -Werror
 )
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE _CRT_SECURE_NO_WARNINGS
+    )
+endif(WIN32)
 target_link_libraries(${PROJECT_NAME}
     PRIVATE tiny-process-library
     PRIVATE cxxopts
