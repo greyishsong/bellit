@@ -123,12 +123,12 @@ export void output_to_tty(string_view content)
 
 export string osc_9_control_seq(string_view title)
 {
-    return format("\x1b];9;{}\x07", title);
+    return format("\x1b]9;{}\x07", title);
 }
 
 export string osc_777_control_seq(string_view title, string_view message)
 {
-    return format("\x1b];777;notify;{};{}\x07", title, message);
+    return format("\x1b]777;notify;{};{}\x07", title, message);
 }
 
 /*!
