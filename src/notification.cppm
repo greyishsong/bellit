@@ -10,6 +10,7 @@ module;
 
 export module notification;
 import process;
+import environment;
 
 using std::format;
 using std::string;
@@ -26,9 +27,35 @@ export enum class NotificationType
     Warn
 };
 
-constexpr string_view get_icon_name(NotificationType type)
+string_view get_icon_name(NotificationType type)
 {
 #ifdef __linux__
+    const DesktopEnvironment de = get_desktop_environment();
+    switch (de) {
+    case DesktopEnvironment::GNOME:
+    {
+        break;
+    }
+    case DesktopEnvironment::KDE:
+    {
+        // For KDE, use the Breeze theme icons
+        switch (type) {
+        case NotificationType::Info:
+            return "/usr/share/icons/breeze/status/64/dialog-positive.svg"sv;
+        case NotificationType::Warn:
+            return "/usr/share/icons/breeze/status/64/dialog-warning.svg"sv;
+        }
+    }
+    case DesktopEnvironment::XFCE:
+    {
+        break;
+    }
+    case DesktopEnvironment::Cinnamon:
+    {
+        break;
+    }
+    default: return ""sv;
+    }
     return ""sv;
 #elif defined(_WIN32)
     switch (type) {
@@ -43,9 +70,14 @@ constexpr string_view get_icon_name(NotificationType type)
 
 #ifdef __linux__
 
-void notify_linux(string_view title, string_view message)
+void notify_linux(string_view title, string_view message, NotificationType type)
 {
-    vector<string> cmd = {"notify-send", "-a", "Bell It"};
+    vector<string>    cmd       = {"notify-send", "--app-name", "Bell It"};
+    const string_view icon_name = get_icon_name(type);
+    if (!icon_name.empty()) {
+        cmd.emplace_back("--icon");
+        cmd.emplace_back(icon_name);
+    }
     cmd.emplace_back(title);
     cmd.emplace_back(message);
     run_task(cmd, fs::current_path(), false);
@@ -98,7 +130,7 @@ export void notify_natively(
 )
 {
 #ifdef __linux__
-    notify_linux(title, message);
+    notify_linux(title, message, type);
 #elif defined(_WIN32)
     notify_windows(title, message, type);
 #elif defined(__APPLE__)
