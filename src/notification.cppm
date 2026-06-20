@@ -30,33 +30,10 @@ export enum class NotificationType
 string_view get_icon_name(NotificationType type)
 {
 #ifdef __linux__
-    const DesktopEnvironment de = get_desktop_environment();
-    switch (de) {
-    case DesktopEnvironment::GNOME:
-    {
-        break;
+    switch (type) {
+    case NotificationType::Info: return "dialog-information"sv;
+    case NotificationType::Warn: return "dialog-warning"sv;
     }
-    case DesktopEnvironment::KDE:
-    {
-        // For KDE, use the Breeze theme icons
-        switch (type) {
-        case NotificationType::Info:
-            return "/usr/share/icons/breeze/status/64/dialog-positive.svg"sv;
-        case NotificationType::Warn:
-            return "/usr/share/icons/breeze/status/64/dialog-warning.svg"sv;
-        }
-    }
-    case DesktopEnvironment::XFCE:
-    {
-        break;
-    }
-    case DesktopEnvironment::Cinnamon:
-    {
-        break;
-    }
-    default: return ""sv;
-    }
-    return ""sv;
 #elif defined(_WIN32)
     switch (type) {
     case NotificationType::Info: return "Info"sv;
