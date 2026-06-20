@@ -19,6 +19,8 @@ namespace fs = std::filesystem;
 constexpr string_view examples = "Examples:\n"
 "To notify instantly:\n"
 "    bellit -t \"Your title\" -m \"Your message\"\n"
+"Send a warning message instead of general notification:\n"
+"    bellit -t \"Warning\" -w \"Something went wrong\"\n"
 "To notify after a long running task has been accomplished:\n"
 "    bellit -t \"Compression\" -m \"Gzip package created.\" -- tar -zcvf large-file.tar.gz /path/to/large/directory\n"
 "Warn when the task fails:\n"
@@ -47,7 +49,7 @@ void notify(string_view title, string_view message, NotificationType type)
 }
 
 int run_task_and_notify(
-    string_view title, string_view message, [[maybe_unused]] string_view warning,
+    string_view title, string_view message, string_view warning,
     const vector<string>& command
 )
 {
@@ -57,17 +59,19 @@ int run_task_and_notify(
         if (result.return_code == 0) {
             notify(title, message, NotificationType::Info);
         } else {
+            // If the warning is empty, use the message as a fallback.
+            if (warning.empty()) {
+                warning = message;
+            }
             notify(title, warning, NotificationType::Warn);
         }
     } else {
         // No command passed, notify directly.
         if (!warning.empty()) {
-            std::cerr
-                << "Error: Warning message (-w/--warning) must be passed together with a command"
-                << std::endl;
-            return 1;
+            notify(title, warning, NotificationType::Warn);
+        } else {
+            notify(title, message, NotificationType::Info);
         }
-        notify(title, message, NotificationType::Info);
     }
     return 0;
 }
@@ -88,7 +92,7 @@ int main(int argc, char* argv[])
     (
         "m,message",
         "Message to send",
-        cxxopts::value<string>(),
+        cxxopts::value<string>()->default_value(""),
         "MESSAGE"
     )
     (
@@ -132,10 +136,8 @@ int main(int argc, char* argv[])
         try {
             const string         title       = args["title"].as<string>();
             const string         message     = args["message"].as<string>();
-            const string         raw_warning = args["warning"].as<string>();
+            const string         warning = args["warning"].as<string>();
             const vector<string> command     = args["command"].as<vector<string>>();
-            // If a command is passed and the warning is empty, use the message as a fallback.
-            const string& warning = !command.empty() && raw_warning.empty() ? message : raw_warning;
             return_code           = run_task_and_notify(title, message, warning, command);
         } catch (const cxxopts::exceptions::exception& e) {
             show_help = true;
