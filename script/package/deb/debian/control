@@ -1,0 +1,23 @@
+Source: bellit
+Section: utils
+Priority: optional
+Maintainer: greyishsong <greyishsong@qq.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ ca-certificates,
+ clang,
+ cmake (>= 4.1),
+ git,
+ ninja-build
+Standards-Version: 4.7.0
+Homepage: https://github.com/greyishsong/bellit
+Rules-Requires-Root: no
+
+Package: bellit
+Architecture: amd64
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Recommends: libnotify-bin
+Description: Cross-platform CLI tool for sending desktop notifications
+ Bell It sends native desktop notifications from the terminal, either
+ immediately or after a long-running command has completed. It can also use
+ terminal OSC notification sequences when running through SSH or tmux.

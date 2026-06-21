@@ -1,0 +1,25 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export PATH := /opt/cmake/bin:$(PATH)
+
+%:
+	dh $@ --buildsystem=cmake+ninja
+
+override_dh_auto_configure:
+	cmake --preset default -DCMAKE_BUILD_TYPE=Release
+
+override_dh_auto_build:
+	cmake --build --preset default
+
+override_dh_auto_install:
+
+override_dh_auto_test:
+
+override_dh_auto_clean:
+	rm -rf build
+
+override_dh_dwz:
+
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
