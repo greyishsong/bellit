@@ -1,7 +1,7 @@
 FROM debian:13
 
 RUN apt-get update \
-    && apt-get install -y ninja-build clang clang-tools openssh-server vim git iproute2 tmux wget \
+    && apt-get install -y ninja-build clang clang-tools openssh-server vim git iproute2 tmux wget ca-certificates build-essential debhelper dpkg-dev fakeroot \
     && wget -c https://github.com/Kitware/CMake/releases/download/v4.2.7/cmake-4.2.7-linux-x86_64.sh -O /root/cmake.sh \
     && chmod a+x /root/cmake.sh \
     && mkdir -p /opt/cmake \

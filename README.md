@@ -53,7 +53,7 @@ Or download the `bellit-windows-x64.zip`, extract `bellit.exe` to any directory 
 
 Install the homebrew package `bellit`:
 ```shell
-brew tap greyishsong/bellit-homebrew
+brew tap greyishsong/bellit
 brew install bellit
 ```
 

@@ -67,3 +67,17 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Packaging artifacts
+script/package/pacman/*.pkg.tar.zst
+script/package/pacman/*.tar.gz
+script/package/pacman/pkg/
+script/package/pacman/src/
+script/package/deb/build/
+script/package/deb/*.deb
+script/package/deb/*.ddeb
+script/package/deb/*.buildinfo
+script/package/deb/*.changes
+script/package/deb/*.dsc
+script/package/deb/*.debian.tar.*
+script/package/deb/*.orig.tar.*
