@@ -38,7 +38,7 @@ All packages are available from GitHub Release, some are available through packa
 
 Debian 13+ and Ubuntu 24+ are supported. For Debian/Ubuntu users, install the `deb` package with `dpkg`.
 
-For Arch/Manjaro users, install the `pkg.tar.zst` package manually with `pacman`, or install the AUR package `bellit-bin`.
+For Arch/Manjaro users, install the `pkg.tar.zst` package manually with `pacman`, or install the AUR package `bellit`.
 
 ### Windows
 
