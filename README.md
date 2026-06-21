@@ -32,9 +32,11 @@ Agents can also use `bellit` through a skill. To install the skill for your agen
 
 ## Installation
 
-All packages are available from GitHub Release, some are available through package manager.
+Bell It can be installed through some package managers. If the package manager you use is not supported, you can just build it from source and place `bellit`/`bellit.exe` to any directory in your `PATH`.
 
 ### Linux
+
+Packages are published in GitHub Release.
 
 Debian 13+ and Ubuntu 24+ are supported. For Debian/Ubuntu users, install the `deb` package with `dpkg`.
 
@@ -47,17 +49,16 @@ Install with `winget`:
 winget install --id greyishsong.bellit
 ```
 
-Or download the `bellit-windows-x64.zip`, extract `bellit.exe` to any directory in your `PATH`.
-
 ### macOS
 
 Install the homebrew package `bellit`:
 ```shell
 brew tap greyishsong/bellit
+brew trust greyishsong/bellit
 brew install bellit
 ```
 
-## Development
+### Build from Source
 
 For better support to C++ module, this project requires
 - CMake 4.1+
@@ -68,11 +69,11 @@ Because different compilers use different Binary Module Interface (BMI) formats,
 
 To build `bellit`:
 ```shell
-cmake --preset default
+cmake --preset default -DCMAKE_BUILD_TYPE=Release # For developing, you can also build Debug here
 cmake --build --preset default
 ```
 
-Then you will have an executable `build/bellit` not depending on any 3rd-party dynamic library. Install it to anywhere you prefer.
+Then you will have an executable `build/bellit`.
 
 ## Limitations
 
