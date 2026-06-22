@@ -34,6 +34,19 @@ export bool is_tmux()
     return tmux != nullptr;
 }
 
+/**
+ * Check whether the original SSH TTY is available.
+ *
+ * Terminal multiplexers (zellij, tmux without passthrough, etc.) intercept
+ * sequences written to /dev/tty. When SSH_TTY is set, we can write directly
+ * to the outermost SSH pseudo-terminal to bypass them.
+ */
+export bool is_ssh_tty_available()
+{
+    const char* ssh_tty = getenv("SSH_TTY");
+    return ssh_tty != nullptr && ssh_tty[0] != '\0';
+}
+
 #ifdef __linux__
 /**
  * \brief Supported Linux desktop environments.

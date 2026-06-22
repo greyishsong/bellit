@@ -7,6 +7,7 @@ module;
 #include <format>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 export module notification;
 import process;
@@ -125,7 +126,12 @@ export void output_to_tty(string_view content)
 #ifdef _WIN32
     ofstream tty("CONOUT$", std::ios::out);
 #else
-    ofstream tty("/dev/tty", std::ios::out);
+    // Prefer the original SSH TTY when available so that terminal
+    // multiplexers (zellij, tmux without passthrough, etc.) cannot
+    // intercept the OSC sequence.
+    const char* ssh_tty = std::getenv("SSH_TTY");
+    const char* tty_path = (ssh_tty && ssh_tty[0] != '\0') ? ssh_tty : "/dev/tty";
+    ofstream tty(tty_path, std::ios::out);
 #endif
     tty << content;
 }

@@ -36,7 +36,10 @@ void notify(string_view title, string_view message, NotificationType type)
     if (is_ssh()) {
         // OSC control sequence can be passed through SSH.
         const string raw_control_seq = osc_777_control_seq(title, message); 
-        if (is_tmux()) {
+        // When SSH_TTY is available we write directly to the outermost SSH
+        // terminal, bypassing any local terminal multiplexer. In that case
+        // the tmux DCS wrapper must not be used.
+        if (is_tmux() && !is_ssh_tty_available()) {
             const string wrapped_seq = wrap_with_dcs(raw_control_seq);
             output_to_tty(wrapped_seq);
         } else {
