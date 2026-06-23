@@ -77,9 +77,14 @@ Then you will have an executable `build/bellit`.
 
 ## Limitations
 
-### SSH/TMUX Session Passthrough
+### SSH Session
 
-Bell It is able to detect SSH/TMUX session (through environment variables) and switch to OSC control sequence. The control sequence will be passed through SSH/TMUX session, then trigger a notification on your local computer. But OSC 777 sequence only supports specifying title and message, you will not see info/warning icon as you run `bellit` locally.
+Bell It is able to detect SSH session (through environment variables) and switch to OSC control sequence. The control sequence will be passed through SSH session, then trigger a notification on your local computer. Even if you run `bellit` in a tmux/zellij session in your SSH server, OSC control sequence can be passed back to your machine.
+
+However, the cost of simplicity is limited SSH session support:
+
+- OSC 777 control sequence does not support icons in notification.
+- For multi-hop SSH connection (i.e. using one ore more bastion hosts), tmux/zellij support is limited to the last hop.
 
 ### Windows Terminal
 
