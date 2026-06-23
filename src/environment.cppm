@@ -25,15 +25,6 @@ export bool is_ssh()
     return ssh_tty != nullptr;
 }
 
-/**
- * Detect tmux session through `TMUX` environment variable.
- */
-export bool is_tmux()
-{
-    const char* tmux = getenv("TMUX");
-    return tmux != nullptr;
-}
-
 #ifdef __linux__
 /**
  * \brief Supported Linux desktop environments.

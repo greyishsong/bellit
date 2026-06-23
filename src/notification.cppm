@@ -7,6 +7,7 @@ module;
 #include <format>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
 export module notification;
 import process;
@@ -119,21 +120,24 @@ export void notify_natively(
 
 // -------------------- OSC notification implementations --------------------
 
-export void output_to_tty(string_view content)
+#ifndef _WIN32
+
+export void output_to_ssh_tty(string_view content)
 {
     using std::ofstream;
-#ifdef _WIN32
-    ofstream tty("CONOUT$", std::ios::out);
-#else
-    ofstream tty("/dev/tty", std::ios::out);
-#endif
+    const char* ssh_tty = std::getenv("SSH_TTY");
+    if (ssh_tty == nullptr) {
+        throw std::runtime_error("Failed to get SSH tty device because SSH_TTY not set");
+    }
+    const string tty_name(ssh_tty);
+    if (tty_name.empty()) {
+        throw std::runtime_error("Failed to get SSH tty device because SSH_TTY is empty");
+    }
+    ofstream tty(tty_name, std::ios::out);
     tty << content;
 }
 
-export string osc_9_control_seq(string_view title)
-{
-    return format("\x1b]9;{}\x07", title);
-}
+#endif // _WIN32
 
 export string osc_777_control_seq(string_view title, string_view message)
 {

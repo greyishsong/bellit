@@ -34,14 +34,13 @@ constexpr string_view examples = "Examples:\n"
 void notify(string_view title, string_view message, NotificationType type)
 {
     if (is_ssh()) {
+#ifdef _WIN32
+        throw std::runtime_error("Windows as SSH server is not supported");
+#else
         // OSC control sequence can be passed through SSH.
-        const string raw_control_seq = osc_777_control_seq(title, message); 
-        if (is_tmux()) {
-            const string wrapped_seq = wrap_with_dcs(raw_control_seq);
-            output_to_tty(wrapped_seq);
-        } else {
-            output_to_tty(raw_control_seq);
-        }
+        const string control_seq = osc_777_control_seq(title, message); 
+        output_to_ssh_tty(control_seq);
+#endif // _WIN32
     } else {
         // Use native notification if called locally.
         notify_natively(title, message, type);
