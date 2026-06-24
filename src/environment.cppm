@@ -6,8 +6,10 @@ module;
 #include <string_view>
 #include <vector>
 #include <algorithm>
+#include <filesystem>
 
 export module environment;
+import process;
 
 using std::getenv;
 using std::size_t;
@@ -15,6 +17,7 @@ using std::string;
 using std::string_view;
 using std::vector;
 using namespace std::string_view_literals;
+namespace fs = std::filesystem;
 
 /**
  * Detect SSH session through `SSH_TTY` environment variable.
@@ -82,4 +85,15 @@ export DesktopEnvironment get_desktop_environment()
     }
     return DesktopEnvironment::Unknown;
 }
-#endif
+#endif // __linux__
+
+#ifdef __APPLE__
+
+export bool has_alerter()
+{
+    const vector<string> cmd = {"where", "alerter"};
+    TaskResult result = run_task(cmd, fs::current_path(), true);
+    return result.stdout_content.find("alerter") != string::npos;
+}
+
+#endif // __APPLE__

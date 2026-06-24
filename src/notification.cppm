@@ -22,13 +22,27 @@ using namespace std::string_view_literals;
 
 // -------------------- Native notification implementations --------------------
 
+// Estimated roughly by human reading speed
+constexpr size_t MS_PER_BYTE           = 50;
+constexpr size_t BASIC_DISPLAY_TIME_MS = 2'000;
+
+/**
+ * Compute how long will a notification be displayed according to its length.
+ * \param n_bytes Length of notification in bytes.
+ * \returns Time to display in milliseconds.
+ */
+size_t adaptive_display_time(size_t n_bytes) noexcept
+{
+    return BASIC_DISPLAY_TIME_MS + MS_PER_BYTE * n_bytes;
+}
+
 export enum class NotificationType
 {
     Info,
     Warn
 };
 
-string_view get_icon_name(NotificationType type)
+string_view get_icon_name(NotificationType type) noexcept
 {
 #ifdef __linux__
     switch (type) {
@@ -56,6 +70,8 @@ void notify_linux(string_view title, string_view message, NotificationType type)
         cmd.emplace_back("--icon");
         cmd.emplace_back(icon_name);
     }
+    cmd.emplace_back("--expire-time");
+    cmd.emplace_back(std::to_string(adaptive_display_time(message.size())));
     cmd.emplace_back(title);
     cmd.emplace_back(message);
     run_task(cmd, fs::current_path(), false);
@@ -80,8 +96,8 @@ void notify_windows(
         "$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path);"
         "$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::{};"
         "$balmsg.Visible = $true;"
-        "$balmsg.ShowBalloonTip(20000)",
-        title, message, icon_name
+        "$balmsg.ShowBalloonTip({})",
+        title, message, icon_name, adaptive_display_time(message.size())
     );
     const vector<string> cmd = {
         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "ByPass", script
@@ -95,9 +111,22 @@ void notify_windows(
 
 void notify_macos(string_view title, string_view message)
 {
-    const string script = format("display notification \"{}\" with title \"{}\"", message, title);
-    const vector<string> cmd = {"osascript", "-e", script};
-    run_task(cmd, fs::current_path(), false);
+    if (has_alerter()) {
+        vector<string> cmd = {"alerter"};
+        const size_t display_time_ms = adaptive_display_time(message.size());
+        const size_t display_time_s = display_time_ms / 1000;
+        cmd.emplace_back("--timeout");
+        cmd.emplace_back(std::to_string(display_time_s));
+        cmd.emplace_back("--title");
+        cmd.emplace_back(title);
+        cmd.emplace_back("--message");
+        cmd.emplace_back(message);
+        run_task(cmd, fs::current_path(), false);
+    } else {
+        const string script = format("display notification \"{}\" with title \"{}\"", message, title);
+        const vector<string> cmd = {"osascript", "-e", script};
+        run_task(cmd, fs::current_path(), false);
+    }
 }
 
 #endif // __APPLE__

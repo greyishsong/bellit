@@ -58,6 +58,11 @@ brew trust greyishsong/bellit
 brew install bellit
 ```
 
+It's recommended to install `vjeantet/alerter` for better experience:
+```shell
+brew install vjeantet/tap/alerter
+```
+
 ### Build from Source
 
 For better support to C++ module, this project requires

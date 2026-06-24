@@ -4,6 +4,7 @@
     "dpkg",
     "osascript",
     "pacman",
+    "vjeantet",
     "winget"
   ]
 }
