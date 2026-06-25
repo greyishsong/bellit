@@ -2,10 +2,10 @@
 set -euo pipefail
 
 pkgname=bellit
-pkgver=1.0.0
+pkgver=1.1.0
 pkgrel=1
 source_url="https://github.com/greyishsong/bellit/archive/refs/tags/v${pkgver}.tar.gz"
-source_sha256="953ec45f5194cbecf3fd2fa260d5fca0982c0c5b222c3f448063fc5a92d9d3f7"
+source_sha256="683621f30299ad8ef9c7c7e79264cf4f4a2e9188a88b9187e9e37644ced91b12"
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 build_dir="${script_dir}/build"

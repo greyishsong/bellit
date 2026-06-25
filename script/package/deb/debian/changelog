@@ -1,3 +1,9 @@
+bellit (1.1.0-1) noble; urgency=medium
+  * Support zellij sessions.
+  * Adaptive display time of notification according to its length.
+
+ -- greyishsong <greyishsong@qq.com>  Sun, 21 Jun 2026 00:00:00 +0000
+
 bellit (1.0.0-1) noble; urgency=medium
 
   * Initial Ubuntu package release.
