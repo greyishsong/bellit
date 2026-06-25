@@ -1,0 +1,10 @@
+{
+    "version": "1.1.0",
+    "description": "Cross-platform CLI tool for sending desktop notification.",
+    "homepage": "https://github.com/greyishsong/bellit",
+    "license": "GPL-2.0-only",
+    "bin": "bellit.exe",
+    "hash": "f45c16d0e328a4140d0dd3d9ea158ccaf9f21f495ea5e78fc479cf1bbc1db201",
+    "notes": "Run bellit --help for usage hints.",
+    "url": "https://github.com/greyishsong/bellit/releases/download/v1.1.0/bellit-windows-x64.zip"
+}
