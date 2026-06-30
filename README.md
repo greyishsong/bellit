@@ -44,9 +44,9 @@ For Arch/Manjaro users, install the `pkg.tar.zst` package manually with `pacman`
 
 ### Windows
 
-Install with `winget`:
+Install with `scoop`:
 ```shell
-winget install --id greyishsong.bellit
+scoop install https://github.com/greyishsong/bellit/raw/refs/heads/main/script/package/scoop/bellit.json
 ```
 
 ### macOS
